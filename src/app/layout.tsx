@@ -17,7 +17,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="nl">
       <body className="min-h-screen antialiased">
         <TopProgress />
-        <header className="sticky top-0 z-30 border-b border-white/5 bg-ink-900/80 backdrop-blur">
+        <header className="border-b border-white/5 bg-ink-900/80 backdrop-blur sm:sticky sm:top-0 sm:z-30">
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2">
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-500 text-ink-900 shadow-glow">

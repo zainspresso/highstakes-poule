@@ -37,7 +37,7 @@ export function DayTabs({
   const next = idx < days.length - 1 ? days[idx + 1] : null;
 
   return (
-    <div className="sticky top-[57px] z-20 -mx-4 mb-3 border-b border-white/5 bg-ink-900/85 px-4 py-2 backdrop-blur">
+    <div className="sticky top-0 z-20 -mx-4 mb-3 border-b border-white/5 bg-ink-900/85 px-4 py-2 backdrop-blur sm:top-[57px]">
       <div className="flex items-center gap-1">
         <button
           type="button"
