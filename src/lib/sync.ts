@@ -60,7 +60,7 @@ function mapMatch(m: FootballDataMatch) {
   return {
     id: m.id,
     stage: m.stage,
-    group_name: m.group,
+    group_name: m.group ? m.group.replace(/^GROUP_?/i, "") : null,
     home_team_id: m.homeTeam?.id ?? null,
     away_team_id: m.awayTeam?.id ?? null,
     home_placeholder: m.homeTeam?.id == null ? (m.homeTeam?.name ?? m.homeTeamPlaceholder ?? null) : null,

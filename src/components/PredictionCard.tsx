@@ -97,7 +97,7 @@ export function PredictionCard({
             <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" strokeLinecap="round"/>
           </svg>
           <span className="tabular-nums">{fmtTime(match.kickoff_at)}</span>
-          {match.group_name && <span className="text-slate-500">· Groep {match.group_name}</span>}
+          {match.group_name && <span className="text-slate-500">· Groep {match.group_name.replace(/^GROUP_?/i, "")}</span>}
           {!teamsKnown && !locked && <span className="pill-warn">TBD</span>}
           {locked && !finished && <span className="pill-warn">Live · gesloten</span>}
           {finished && <span className="pill-muted">Afgelopen</span>}
@@ -115,8 +115,12 @@ export function PredictionCard({
 
         <div className="flex items-center gap-1.5">
           <input
-            type="number" name="home_score" min={0} max={30}
-            value={home} onChange={(e) => setHome(e.target.value)}
+            type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
+            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+            enterKeyHint="next"
+            name="home_score"
+            value={home}
+            onChange={(e) => setHome(e.target.value.replace(/\D/g, "").slice(0, 2))}
             disabled={!editable}
             className="score-input"
             placeholder="–"
@@ -125,8 +129,12 @@ export function PredictionCard({
           />
           <span className="text-slate-500">·</span>
           <input
-            type="number" name="away_score" min={0} max={30}
-            value={away} onChange={(e) => setAway(e.target.value)}
+            type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
+            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+            enterKeyHint="done"
+            name="away_score"
+            value={away}
+            onChange={(e) => setAway(e.target.value.replace(/\D/g, "").slice(0, 2))}
             disabled={!editable}
             className="score-input"
             placeholder="–"

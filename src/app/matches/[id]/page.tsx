@@ -55,7 +55,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     <div className="space-y-6">
       <div className="card">
         <div className="text-[10px] uppercase tracking-widest text-slate-500">
-          {stageLabel(match.stage)}{match.group_name ? ` · Groep ${match.group_name}` : ""} · {fmtKickoff(match.kickoff_at)}
+          {stageLabel(match.stage)}{match.group_name ? ` · Groep ${match.group_name.replace(/^GROUP_?/i, "")}` : ""} · {fmtKickoff(match.kickoff_at)}
         </div>
         <div className="mt-2 font-display text-2xl font-bold text-white">{homeName} <span className="text-slate-500">vs</span> {awayName}</div>
         {match.home_score != null && match.away_score != null && (
