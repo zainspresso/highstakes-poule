@@ -41,11 +41,13 @@ export function PredictionCard({
   prediction,
   others,
   currentUserId,
+  totalUsers,
 }: {
   match: MatchView;
   prediction: PredictionView;
   others?: OtherPrediction[];
   currentUserId?: string;
+  totalUsers?: number;
 }) {
   const isKnockout = isKnockoutStage(match.stage);
   const teamsKnown = match.home_team != null && match.away_team != null;
@@ -217,12 +219,14 @@ export function PredictionCard({
         </p>
       ) : null}
 
-      {/* After kickoff: show everyone's predictions */}
-      {locked && others && others.length > 0 && (
+      {/* Submitter / predictions overview */}
+      {others && others.length > 0 && (
         <OthersPredictions
           others={others}
           currentUserId={currentUserId}
+          locked={locked}
           finished={finished}
+          totalUsers={totalUsers}
           realHome={match.home_score}
           realAway={match.away_score}
         />
@@ -234,13 +238,17 @@ export function PredictionCard({
 function OthersPredictions({
   others,
   currentUserId,
+  locked,
   finished,
+  totalUsers,
   realHome,
   realAway,
 }: {
   others: OtherPrediction[];
   currentUserId?: string;
+  locked: boolean;
   finished: boolean;
+  totalUsers?: number;
   realHome: number | null;
   realAway: number | null;
 }) {
@@ -251,6 +259,14 @@ function OthersPredictions({
     return a.display_name.localeCompare(b.display_name);
   });
 
+  const label = finished
+    ? "Wie zat erbij?"
+    : locked
+    ? "Voorspellingen van iedereen"
+    : "Wie heeft al ingevuld?";
+
+  const counter = totalUsers != null ? `${sorted.length}/${totalUsers}` : `${sorted.length}`;
+
   return (
     <div className="mt-3 border-t border-white/5 pt-3">
       <button
@@ -259,9 +275,9 @@ function OthersPredictions({
         className="flex w-full items-center justify-between text-xs text-slate-400 hover:text-white"
       >
         <span>
-          {finished ? "Wie zat erbij?" : "Voorspellingen van iedereen"}
-          <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-400 ring-1 ring-white/10">
-            {sorted.length}
+          {label}
+          <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-400 ring-1 ring-white/10 tabular-nums">
+            {counter}
           </span>
         </span>
         <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2">
@@ -279,12 +295,20 @@ function OthersPredictions({
                 <span className={`min-w-0 flex-1 truncate text-sm ${isMe ? "font-semibold text-white" : "text-slate-200"}`}>
                   {o.display_name}{isMe && <span className="ml-1 text-[10px] uppercase text-accent-400">jij</span>}
                 </span>
-                <span className={`tabular-nums text-sm font-semibold ${exact ? "text-accent-400" : "text-slate-300"}`}>
-                  {o.home_score}–{o.away_score}
-                </span>
-                {finished && (
-                  <span className={o.points_total > 0 ? "pill-accent" : "pill-muted"}>
-                    {o.points_total > 0 ? `+${o.points_total}` : "0"}
+                {locked ? (
+                  <>
+                    <span className={`tabular-nums text-sm font-semibold ${exact ? "text-accent-400" : "text-slate-300"}`}>
+                      {o.home_score}–{o.away_score}
+                    </span>
+                    {finished && (
+                      <span className={o.points_total > 0 ? "pill-accent" : "pill-muted"}>
+                        {o.points_total > 0 ? `+${o.points_total}` : "0"}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="grid h-5 w-5 place-items-center rounded-full bg-accent-500/20 text-accent-400">
+                    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </span>
                 )}
               </li>

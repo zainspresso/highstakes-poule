@@ -11,12 +11,14 @@ export function PredictionsByDay({
   predictions,
   othersByMatch,
   currentUserId,
+  totalUsers,
 }: {
   days: Day[];
   matchesByDay: Record<string, MatchView[]>;
   predictions: Record<number, PredictionView>;
   othersByMatch: Record<number, OtherPrediction[]>;
   currentUserId: string;
+  totalUsers: number;
 }) {
   const initial = useMemo(() => {
     const today = todayKey();
@@ -84,6 +86,7 @@ export function PredictionsByDay({
                     prediction={predictions[m.id] ?? null}
                     others={othersByMatch[m.id]}
                     currentUserId={currentUserId}
+                    totalUsers={totalUsers}
                   />
                 ))}
               </div>

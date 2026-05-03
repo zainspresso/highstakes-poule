@@ -47,33 +47,31 @@ export default async function PredictionsPage() {
     }])
   );
 
-  // Predictions of all users for matches that have started — to show on each card
-  const startedMatchIds = (matchesRaw ?? [])
-    .filter((m) => new Date(m.kickoff_at).getTime() <= Date.now())
-    .map((m) => m.id);
+  // Fetch all predictions across users so we can show:
+  // - before kickoff: only WHO has submitted (no scores)
+  // - after kickoff:   each user's score
+  // - after finished:  each user's points
+  const [{ data: allPreds }, { data: usersAll }] = await Promise.all([
+    supabase
+      .from("predictions")
+      .select("match_id, user_id, home_score, away_score, advancing_team_id, points_total"),
+    supabase.from("users").select("id, display_name"),
+  ]);
+  const nameMap = new Map((usersAll ?? []).map((u) => [u.id, u.display_name]));
+  const totalUsers = (usersAll ?? []).length;
 
   const othersByMatch: Record<number, OtherPrediction[]> = {};
-  if (startedMatchIds.length > 0) {
-    const [{ data: allPreds }, { data: usersAll }] = await Promise.all([
-      supabase
-        .from("predictions")
-        .select("match_id, user_id, home_score, away_score, advancing_team_id, points_total")
-        .in("match_id", startedMatchIds),
-      supabase.from("users").select("id, display_name"),
-    ]);
-    const nameMap = new Map((usersAll ?? []).map((u) => [u.id, u.display_name]));
-    for (const p of allPreds ?? []) {
-      const arr = othersByMatch[p.match_id] ?? [];
-      arr.push({
-        user_id: p.user_id,
-        display_name: nameMap.get(p.user_id) ?? "?",
-        home_score: p.home_score,
-        away_score: p.away_score,
-        advancing_team_id: p.advancing_team_id,
-        points_total: p.points_total,
-      });
-      othersByMatch[p.match_id] = arr;
-    }
+  for (const p of allPreds ?? []) {
+    const arr = othersByMatch[p.match_id] ?? [];
+    arr.push({
+      user_id: p.user_id,
+      display_name: nameMap.get(p.user_id) ?? "?",
+      home_score: p.home_score,
+      away_score: p.away_score,
+      advancing_team_id: p.advancing_team_id,
+      points_total: p.points_total,
+    });
+    othersByMatch[p.match_id] = arr;
   }
 
   if ((matchesRaw ?? []).length === 0) {
@@ -136,6 +134,7 @@ export default async function PredictionsPage() {
       predictions={predRecord}
       othersByMatch={othersByMatch}
       currentUserId={session.uid}
+      totalUsers={totalUsers}
     />
   );
 }
