@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  background: #0b1020;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(59, 130, 246, 0.10), transparent 70%);
+  background-attachment: fixed;
+  color: #e6e9f2;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl bg-accent-500 px-5 py-2.5 text-sm font-semibold text-ink-900 shadow-lg shadow-accent-500/20 transition hover:bg-accent-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 backdrop-blur transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white;
+  }
+  .input {
+    @apply block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white shadow-inner placeholder:text-slate-500 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/40;
+  }
+  .card {
+    @apply rounded-2xl border border-white/10 bg-ink-800/60 p-4 shadow-lg shadow-black/20 backdrop-blur;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold;
+  }
+  .pill-accent {
+    @apply pill bg-accent-500/15 text-accent-400 ring-1 ring-inset ring-accent-500/30;
+  }
+  .pill-warn {
+    @apply pill bg-warn-500/15 text-warn-400 ring-1 ring-inset ring-warn-500/30;
+  }
+  .pill-muted {
+    @apply pill bg-white/5 text-slate-400 ring-1 ring-inset ring-white/10;
+  }
+  .score-input {
+    @apply h-12 w-12 rounded-xl border border-white/10 bg-ink-900/60 text-center text-xl font-bold tabular-nums text-white shadow-inner focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/40 disabled:opacity-50;
+  }
+}
+
+/* Hide arrows on number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Smooth scroll for day tabs */
+.scroll-x {
+  scrollbar-width: none;
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  @apply rounded-md;
+}
