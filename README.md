@@ -55,12 +55,37 @@ Daarna staat het hele WK-schema in de DB.
 
 ## Deploy naar Vercel
 
-1. Push naar GitHub, koppel repo aan Vercel.
+1. Push naar GitHub, koppel repo aan Vercel (Hobby plan).
 2. Vul dezelfde env vars in (Project Settings → Environment Variables).
-3. Vercel detecteert `vercel.json` en activeert de cron (elke 10 min `/api/cron/sync-matches`).
-4. Stuur je vrienden de URL — admin maakt hun namen aan in `/admin`.
+3. Stuur je vrienden de URL — admin maakt hun namen aan in `/admin`.
 
 **Kosten:** €0/maand op de gratis tiers van Vercel + Supabase + football-data.org. Eigen domein optioneel (~€10/jaar).
+
+### Cron via Supabase pg_cron
+
+Vercel Hobby beperkt cron tot 1× per dag — onbruikbaar voor live uitslagen. We gebruiken in plaats daarvan **Supabase pg_cron** (gratis, in de DB zelf). Na de eerste deploy:
+
+1. Open Supabase SQL Editor en run [supabase/migrations/0002_pgcron.sql](supabase/migrations/0002_pgcron.sql).
+2. Seed de twee vault-secrets met je eigen waardes:
+
+   ```sql
+   select vault.create_secret('https://your-app.vercel.app', 'app_url');
+   select vault.create_secret('your-cron-secret-here',       'cron_secret');
+   ```
+
+   `cron_secret` moet **exact** matchen met `CRON_SECRET` in je Vercel env vars.
+
+3. Verifieer:
+
+   ```sql
+   select * from cron.job;
+   select public.trigger_match_sync();              -- handmatig testen
+   select * from net._http_response order by created desc limit 5;
+   ```
+
+   Het laatste zou een `200` response moeten tonen.
+
+Cron draait daarna elke 10 min en synct match-data + uitslagen.
 
 ## Hoe het werkt
 
