@@ -23,25 +23,22 @@ export default async function HomePage() {
   }));
 
   return (
-    <div className="mx-auto mt-8 max-w-md">
-      <div className="card relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-accent-500/20 blur-3xl" />
-        <div className="relative">
-          <div className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent-400">
-            WK 2026 · Vrienden-poule
-          </div>
-          <h1 className="mb-2 font-display text-2xl font-bold">Welkom terug</h1>
-          <p className="mb-6 text-sm text-slate-400">
-            Selecteer je naam en log in met je PIN.
+    <div className="mx-auto mt-8 max-w-sm">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold tracking-tightest">Welkom terug</h1>
+        <p className="mt-1.5 text-sm text-ink-500">
+          Selecteer je naam en log in met je PIN.
+        </p>
+      </div>
+
+      <div className="card p-6">
+        {list.length === 0 ? (
+          <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm text-warn">
+            Er zijn nog geen deelnemers. Vraag de admin om je toe te voegen.
           </p>
-          {list.length === 0 ? (
-            <p className="rounded-xl bg-warn-500/10 p-3 text-sm text-warn-400 ring-1 ring-warn-500/30">
-              Er zijn nog geen deelnemers aangemaakt. Vraag de admin om je toe te voegen.
-            </p>
-          ) : (
-            <LoginForm users={list} />
-          )}
-        </div>
+        ) : (
+          <LoginForm users={list} />
+        )}
       </div>
     </div>
   );

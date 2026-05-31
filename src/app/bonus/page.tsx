@@ -29,13 +29,12 @@ export default async function BonusPage() {
   const myMap = new Map((myPreds ?? []).map((p) => [p.question_id, p]));
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="font-display text-2xl font-bold">Bonusvragen</h1>
-        <p className="text-sm text-slate-500">
-          Telt los — eigen klassement, geen invloed op het hoofdklassement.
-        </p>
-      </div>
+    <div>
+      <h1 className="text-3xl font-bold tracking-tightest">Bonusvragen</h1>
+      <p className="mb-6 mt-1 text-sm text-ink-500">
+        Eigen ranglijst — geen invloed op hoofdklassement.
+      </p>
+
       <BonusForms
         questions={(questions ?? []).map((q) => ({
           ...q,

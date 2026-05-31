@@ -35,16 +35,11 @@ function BonusCard({ q, teams }: { q: Question; teams: Team[] }) {
   const my = (q.my_value ?? {}) as Record<string, unknown>;
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setMsg(null);
+    e.preventDefault(); setMsg(null);
     const fd = new FormData(e.currentTarget);
     let value: Record<string, unknown> = {};
     if (q.type === "top3_teams") {
-      value = {
-        first: fd.get("first"),
-        second: fd.get("second"),
-        third: fd.get("third"),
-      };
+      value = { first: fd.get("first"), second: fd.get("second"), third: fd.get("third") };
     } else if (q.type === "player_name") {
       value = { name: fd.get("name") };
     } else if (q.type === "integer") {
@@ -60,69 +55,54 @@ function BonusCard({ q, teams }: { q: Question; teams: Team[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card space-y-3">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-semibold">{q.label}</h2>
-        <span className="text-xs text-slate-500">
-          Sluit: {fmtKickoff(q.closes_at)}
-        </span>
+    <form onSubmit={onSubmit} className="card p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-base font-semibold text-ink-900">{q.label}</h2>
+        <span className="text-[11px] text-ink-500">Sluit · {fmtKickoff(q.closes_at)}</span>
       </div>
 
-      {q.type === "top3_teams" && (
-        <div className="grid grid-cols-3 gap-2">
-          {(["first", "second", "third"] as const).map((slot, i) => (
-            <div key={slot}>
-              <label className="mb-1 block text-xs font-medium text-slate-600">{i + 1}e</label>
-              <select
-                name={slot}
-                defaultValue={(my[slot] as string) ?? ""}
-                disabled={closed}
-                className="input"
-              >
-                <option value="">— kies —</option>
-                {teams.map((t) => (
-                  <option key={t.id} value={t.short_code ?? t.name}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="mt-4">
+        {q.type === "top3_teams" && (
+          <div className="grid grid-cols-3 gap-2">
+            {(["first", "second", "third"] as const).map((slot, i) => (
+              <div key={slot}>
+                <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-ink-500">
+                  {i + 1}e
+                </label>
+                <select name={slot} defaultValue={(my[slot] as string) ?? ""} disabled={closed} className="input">
+                  <option value="">— kies —</option>
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.short_code ?? t.name}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        )}
 
-      {q.type === "player_name" && (
-        <input
-          name="name"
-          defaultValue={(my.name as string) ?? ""}
-          disabled={closed}
-          className="input"
-          placeholder="Bv. Erling Haaland"
-        />
-      )}
+        {q.type === "player_name" && (
+          <input name="name" defaultValue={(my.name as string) ?? ""} disabled={closed}
+            className="input" placeholder="Bv. Erling Haaland" />
+        )}
 
-      {q.type === "integer" && (
-        <input
-          name="count"
-          type="number"
-          min={0}
-          max={20}
-          defaultValue={(my.count as number) ?? ""}
-          disabled={closed}
-          className="input"
-          placeholder="0"
-        />
-      )}
+        {q.type === "integer" && (
+          <input name="count" type="number" min={0} max={20}
+            defaultValue={(my.count as number) ?? ""} disabled={closed}
+            className="input" placeholder="0" />
+        )}
+      </div>
 
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500">
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-xs">
           {closed
-            ? `Gesloten · ${q.my_points} bonuspunten`
-            : msg ?? (q.my_value ? "Voorspelling opgeslagen" : "Nog niet ingevuld")}
+            ? <span className="text-ink-500">Gesloten · <span className="font-semibold text-brand-600">{q.my_points} pt</span></span>
+            : msg ? <span className="text-ok">{msg}</span>
+            : q.my_value ? <span className="text-ink-500">Opgeslagen</span>
+            : <span className="text-ink-400">Nog niet ingevuld</span>}
         </span>
         {!closed && (
-          <button type="submit" className="btn" disabled={pending}>
-            {pending ? "Bezig…" : "Opslaan"}
+          <button type="submit" className="btn-brand" disabled={pending}>
+            {pending ? "…" : "Opslaan"}
           </button>
         )}
       </div>

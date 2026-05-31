@@ -1,73 +1,98 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html, body {
-  background: #0b1020;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(59, 130, 246, 0.10), transparent 70%);
-  background-attachment: fixed;
-  color: #e6e9f2;
+  background: #FAFAFA;
+  color: #0A0A0A;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection { background: #DCE7FF; color: #0A0A0A; }
+
+@layer base {
+  h1, h2, h3 { letter-spacing: -0.02em; }
 }
 
 @layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-soft;
+  }
+  .card-hover {
+    @apply transition hover:shadow-pop;
+  }
+
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl bg-accent-500 px-5 py-2.5 text-sm font-semibold text-ink-900 shadow-lg shadow-accent-500/20 transition hover:bg-accent-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-full bg-ink-900 px-5 text-sm font-semibold text-white transition;
+    @apply hover:bg-ink-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-brand {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-semibold text-white transition;
+    @apply hover:bg-brand-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 backdrop-blur transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex h-9 items-center justify-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-medium text-ink-900 transition;
+    @apply hover:border-line2 hover:bg-bg disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white;
+    @apply inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-500 transition hover:bg-bg hover:text-ink-900;
   }
+  .btn-icon {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-500 transition hover:bg-bg hover:text-ink-900;
+  }
+
   .input {
-    @apply block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white shadow-inner placeholder:text-slate-500 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/40;
+    @apply block w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 transition focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15;
   }
-  .card {
-    @apply rounded-2xl border border-white/10 bg-ink-800/60 p-4 shadow-lg shadow-black/20 backdrop-blur;
-  }
+
   .pill {
-    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold;
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium;
   }
-  .pill-accent {
-    @apply pill bg-accent-500/15 text-accent-400 ring-1 ring-inset ring-accent-500/30;
-  }
-  .pill-warn {
-    @apply pill bg-warn-500/15 text-warn-400 ring-1 ring-inset ring-warn-500/30;
-  }
-  .pill-muted {
-    @apply pill bg-white/5 text-slate-400 ring-1 ring-inset ring-white/10;
-  }
+  .pill-line   { @apply pill border border-line bg-surface text-ink-700; }
+  .pill-brand  { @apply pill bg-brand-50 text-brand-600; }
+  .pill-ok     { @apply pill bg-ok/10 text-ok; }
+  .pill-warn   { @apply pill bg-warn/10 text-warn; }
+  .pill-danger { @apply pill bg-danger/10 text-danger; }
+  .pill-muted  { @apply pill bg-bg text-ink-500; }
+
   .score-input {
-    @apply h-12 w-12 rounded-xl border border-white/10 bg-ink-900/60 text-center text-xl font-bold tabular-nums text-white shadow-inner focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/40 disabled:opacity-50;
+    @apply h-14 w-14 rounded-2xl border border-line bg-bg text-center text-2xl font-bold tabular-nums text-ink-900 transition;
+    @apply focus:border-brand-500 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-brand-500/15;
+    @apply disabled:opacity-50;
+  }
+
+  .kbd {
+    @apply rounded border border-line bg-bg px-1.5 font-mono text-[11px] text-ink-500;
   }
 }
 
-/* Hide arrows on number inputs */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type="number"] { -moz-appearance: textfield; }
-
-/* Smooth scroll for day tabs */
-.scroll-x {
-  scrollbar-width: none;
-}
+.scroll-x { scrollbar-width: none; }
 .scroll-x::-webkit-scrollbar { display: none; }
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(10, 10, 10, 0.04) 0%,
+    rgba(10, 10, 10, 0.08) 50%,
+    rgba(10, 10, 10, 0.04) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
   @apply rounded-md;

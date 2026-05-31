@@ -76,11 +76,11 @@ export default async function PredictionsPage() {
 
   if ((matchesRaw ?? []).length === 0) {
     return (
-      <div className="card text-center">
-        <p className="text-sm text-slate-300">
-          Er staan nog geen wedstrijden in de database.
+      <div className="card p-8 text-center">
+        <p className="text-base font-semibold text-ink-900">
+          Nog geen wedstrijden ingeladen.
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-sm text-ink-500">
           Vraag de admin om de match-sync te draaien.
         </p>
       </div>

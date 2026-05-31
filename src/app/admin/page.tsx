@@ -3,14 +3,8 @@ import { db } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { fmtKickoff, stageLabel } from "@/lib/format";
 import {
-  adminCreateUser,
-  adminDeleteUser,
-  adminOverrideMatch,
-  adminResetPin,
-  adminResolveBonus,
-  adminToggleAdmin,
-  adminTriggerSync,
-  adminUpdateScoring,
+  adminCreateUser, adminDeleteUser, adminOverrideMatch, adminResetPin,
+  adminResolveBonus, adminToggleAdmin, adminTriggerSync, adminUpdateScoring,
 } from "@/actions/admin";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +13,7 @@ export default async function AdminPage() {
   const session = await getSession();
   if (!session) redirect("/");
   if (!session.admin) {
-    return <p className="card text-sm text-red-700">Geen toegang.</p>;
+    return <p className="card p-4 text-sm text-danger">Geen toegang.</p>;
   }
 
   const supabase = db();
@@ -45,48 +39,43 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Admin</h1>
+      <h1 className="text-3xl font-bold tracking-tightest">Admin</h1>
 
-      <section className="card space-y-4">
-        <h2 className="font-bold">Match-sync</h2>
+      <Section title="Match-sync" caption="Cron draait elke 10 min via Supabase. Hier kun je handmatig triggeren.">
         <form action={adminTriggerSync}>
-          <button className="btn">Nu synchroniseren</button>
+          <button className="btn-brand">Nu synchroniseren</button>
         </form>
-        <p className="text-xs text-slate-500">
-          Cron draait elke 10 min op Vercel. Hier kun je hem handmatig triggeren.
-        </p>
-      </section>
+      </Section>
 
-      <section className="card space-y-4">
-        <h2 className="font-bold">Deelnemers</h2>
-        <form action={adminCreateUser} className="flex flex-wrap items-end gap-2">
-          <div>
-            <label className="mb-1 block text-xs font-medium">Naam</label>
+      <Section title="Deelnemers">
+        <form action={adminCreateUser} className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[160px] flex-1">
+            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-ink-500">Naam</label>
             <input name="display_name" className="input" required />
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="is_admin" /> Admin
+          <label className="flex items-center gap-2 text-sm text-ink-700">
+            <input type="checkbox" name="is_admin" className="h-4 w-4 accent-brand-500" /> Admin
           </label>
-          <button className="btn">Toevoegen</button>
+          <button className="btn-brand">Toevoegen</button>
         </form>
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="mt-4 card overflow-hidden p-0">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-3 py-2">Naam</th>
-                <th className="px-3 py-2">PIN</th>
-                <th className="px-3 py-2">Admin</th>
-                <th className="px-3 py-2"></th>
+            <thead>
+              <tr className="border-b border-line text-left">
+                <th className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wider text-ink-500">Naam</th>
+                <th className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wider text-ink-500">PIN</th>
+                <th className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wider text-ink-500">Admin</th>
+                <th className="px-3 py-2.5"></th>
               </tr>
             </thead>
             <tbody>
               {(users ?? []).map((u) => (
-                <tr key={u.id} className="border-t">
-                  <td className="px-3 py-2 font-medium">{u.display_name}</td>
-                  <td className="px-3 py-2 text-slate-600">{u.pin_hash ? "ingesteld" : "nog niet"}</td>
-                  <td className="px-3 py-2 text-slate-600">{u.is_admin ? "ja" : "nee"}</td>
-                  <td className="px-3 py-2">
+                <tr key={u.id} className="border-b border-line last:border-0">
+                  <td className="px-3 py-2.5 font-medium text-ink-900">{u.display_name}</td>
+                  <td className="px-3 py-2.5 text-ink-500">{u.pin_hash ? "ingesteld" : "nog niet"}</td>
+                  <td className="px-3 py-2.5 text-ink-500">{u.is_admin ? "ja" : "nee"}</td>
+                  <td className="px-3 py-2.5">
                     <div className="flex flex-wrap gap-2">
                       <form action={adminResetPin}>
                         <input type="hidden" name="user_id" value={u.id} />
@@ -98,7 +87,7 @@ export default async function AdminPage() {
                       </form>
                       <form action={adminDeleteUser}>
                         <input type="hidden" name="user_id" value={u.id} />
-                        <button className="btn-secondary text-red-600">Verwijder</button>
+                        <button className="btn-secondary !text-danger">Verwijder</button>
                       </form>
                     </div>
                   </td>
@@ -107,89 +96,72 @@ export default async function AdminPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </Section>
 
-      <section className="card space-y-4">
-        <h2 className="font-bold">Puntentelling</h2>
-        <form action={adminUpdateScoring} className="space-y-2">
+      <Section title="Puntentelling">
+        <form action={adminUpdateScoring} className="card p-4 space-y-3">
           {(scoring ?? []).map((s) => (
-            <div key={s.key} className="grid grid-cols-[200px_100px_1fr] items-center gap-3">
-              <span className="text-sm font-mono text-slate-600">{s.key}</span>
-              <input
-                type="number"
-                name={`scoring__${s.key}`}
-                defaultValue={s.points}
-                className="input"
-              />
-              <span className="text-xs text-slate-500">{s.description}</span>
+            <div key={s.key} className="grid grid-cols-[160px_90px_1fr] items-center gap-3">
+              <span className="font-mono text-xs text-ink-700">{s.key}</span>
+              <input type="number" name={`scoring__${s.key}`} defaultValue={s.points} className="input" />
+              <span className="text-xs text-ink-500">{s.description}</span>
             </div>
           ))}
-          <button className="btn mt-2">Opslaan</button>
+          <button className="btn-brand mt-2">Opslaan</button>
         </form>
-      </section>
+      </Section>
 
-      <section className="card space-y-4">
-        <h2 className="font-bold">Bonusvragen oplossen</h2>
-        <p className="text-xs text-slate-500">
-          Vul de juiste antwoord-JSON in. Voorbeelden:
-          <br />
-          <code>top3</code>: <code>{`{"first":"BRA","second":"ARG","third":"FRA"}`}</code>
-          <br />
-          <code>top_scorer</code>: <code>{`"Erling Haaland"`}</code>
-          <br />
-          <code>final_goals</code>: <code>{`3`}</code>
-        </p>
-        {(questions ?? []).map((q) => (
-          <form key={q.id} action={adminResolveBonus} className="rounded border p-3">
-            <input type="hidden" name="question_id" value={q.id} />
-            <div className="mb-2 text-sm font-medium">{q.label} <span className="text-xs text-slate-500">({q.key})</span></div>
-            <textarea
-              name="resolved_value"
-              rows={2}
-              defaultValue={q.resolved_value == null ? "" : JSON.stringify(q.resolved_value)}
-              className="input font-mono text-xs"
-              placeholder="JSON"
-            />
-            <button className="btn mt-2">Opslaan & herrekenen</button>
-          </form>
-        ))}
-      </section>
+      <Section
+        title="Bonusvragen oplossen"
+        caption={
+          <>
+            JSON voorbeelden:{" "}
+            <code className="rounded bg-bg px-1 font-mono text-[11px] text-ink-700">{`top3: {"first":"BRA","second":"ARG","third":"FRA"}`}</code>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          {(questions ?? []).map((q) => (
+            <form key={q.id} action={adminResolveBonus} className="card p-4">
+              <input type="hidden" name="question_id" value={q.id} />
+              <div className="mb-2 flex items-baseline justify-between">
+                <div className="text-sm font-semibold text-ink-900">{q.label}</div>
+                <div className="font-mono text-[11px] text-ink-500">{q.key}</div>
+              </div>
+              <textarea
+                name="resolved_value" rows={2}
+                defaultValue={q.resolved_value == null ? "" : JSON.stringify(q.resolved_value)}
+                className="input font-mono text-xs" placeholder="JSON"
+              />
+              <button className="btn-brand mt-2">Opslaan & herrekenen</button>
+            </form>
+          ))}
+        </div>
+      </Section>
 
-      <section className="card space-y-4">
-        <h2 className="font-bold">Wedstrijd-uitslag handmatig overschrijven</h2>
-        <p className="text-xs text-slate-500">
-          Alleen gebruiken als de API iets mist (bv. wie doorgaat na strafschoppen of een correctie).
-        </p>
-        <div className="space-y-2">
+      <Section title="Handmatige uitslagen" caption="Alleen voor correcties of penalty-doorgaander.">
+        <div className="space-y-3">
           {(matches ?? []).map((m) => {
             const home = m.home_team_id ? tmap.get(m.home_team_id) : (m.home_placeholder ?? "TBD");
             const away = m.away_team_id ? tmap.get(m.away_team_id) : (m.away_placeholder ?? "TBD");
             return (
-              <form key={m.id} action={adminOverrideMatch} className="rounded border p-3">
+              <form key={m.id} action={adminOverrideMatch} className="card p-4">
                 <input type="hidden" name="match_id" value={m.id} />
-                <div className="flex flex-wrap items-end gap-2 text-sm">
+                <div className="flex flex-wrap items-end gap-3 text-sm">
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium">{home} – {away}</div>
-                    <div className="text-xs text-slate-500">{stageLabel(m.stage)} · {fmtKickoff(m.kickoff_at)} · status {m.status}</div>
+                    <div className="font-semibold text-ink-900">{home} – {away}</div>
+                    <div className="text-[11px] text-ink-500">{stageLabel(m.stage)} · {fmtKickoff(m.kickoff_at)} · {m.status}</div>
                   </div>
-                  <div>
-                    <label className="block text-xs">Thuis</label>
-                    <input name="home_score" type="number" defaultValue={m.home_score ?? ""} className="input w-20" />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Uit</label>
-                    <input name="away_score" type="number" defaultValue={m.away_score ?? ""} className="input w-20" />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Door</label>
+                  <FieldSmall label="Thuis"><input name="home_score" type="number" defaultValue={m.home_score ?? ""} className="input w-20" /></FieldSmall>
+                  <FieldSmall label="Uit"><input name="away_score" type="number" defaultValue={m.away_score ?? ""} className="input w-20" /></FieldSmall>
+                  <FieldSmall label="Door">
                     <select name="advancing_team_id" defaultValue={m.advancing_team_id ?? ""} className="input">
                       <option value="">—</option>
                       {m.home_team_id && <option value={m.home_team_id}>{tmap.get(m.home_team_id)}</option>}
                       {m.away_team_id && <option value={m.away_team_id}>{tmap.get(m.away_team_id)}</option>}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs">Status</label>
+                  </FieldSmall>
+                  <FieldSmall label="Status">
                     <select name="status" defaultValue={m.status} className="input">
                       <option value="SCHEDULED">SCHEDULED</option>
                       <option value="TIMED">TIMED</option>
@@ -197,14 +169,34 @@ export default async function AdminPage() {
                       <option value="PAUSED">PAUSED</option>
                       <option value="FINISHED">FINISHED</option>
                     </select>
-                  </div>
-                  <button className="btn">Opslaan</button>
+                  </FieldSmall>
+                  <button className="btn-brand">Opslaan</button>
                 </div>
               </form>
             );
           })}
         </div>
-      </section>
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, caption, children }: { title: string; caption?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-lg font-semibold tracking-tightest text-ink-900">{title}</h2>
+      {caption && <p className="mt-0.5 mb-3 text-xs text-ink-500">{caption}</p>}
+      {!caption && <div className="mt-3" />}
+      {children}
+    </section>
+  );
+}
+
+function FieldSmall({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-ink-500">{label}</label>
+      {children}
     </div>
   );
 }

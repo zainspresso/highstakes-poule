@@ -53,50 +53,52 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-6">
-      <div className="card">
-        <div className="text-[10px] uppercase tracking-widest text-slate-500">
+      <div className="card p-6">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-ink-500">
           {stageLabel(match.stage)}{match.group_name ? ` · Groep ${match.group_name.replace(/^GROUP_?/i, "")}` : ""} · {fmtKickoff(match.kickoff_at)}
         </div>
-        <div className="mt-2 font-display text-2xl font-bold text-white">{homeName} <span className="text-slate-500">vs</span> {awayName}</div>
+        <h1 className="mt-1 text-3xl font-bold tracking-tightest text-ink-900">
+          {homeName} <span className="text-ink-300">vs</span> {awayName}
+        </h1>
         {match.home_score != null && match.away_score != null && (
           <div className="mt-3 flex items-center gap-3">
-            <span className="font-display text-3xl font-bold tabular-nums text-accent-400">
+            <span className="rounded-xl bg-brand-50 px-3 py-1.5 text-2xl font-bold tabular-nums text-brand-600">
               {match.home_score} – {match.away_score}
             </span>
             {match.advancing_team_id && (
-              <span className="pill-accent">Door: {tmap.get(match.advancing_team_id)}</span>
+              <span className="pill-line">Door: {tmap.get(match.advancing_team_id)}</span>
             )}
           </div>
         )}
       </div>
 
       <div>
-        <h2 className="mb-3 font-display text-lg font-bold">Voorspellingen</h2>
+        <h2 className="mb-3 text-base font-semibold text-ink-900">Voorspellingen</h2>
         {!kickoffPassed ? (
-          <p className="rounded-xl bg-warn-500/10 p-3 text-sm text-warn-400 ring-1 ring-warn-500/30">
-            Voorspellingen van anderen zijn pas zichtbaar na aftrap.
+          <p className="card p-4 text-sm text-warn">
+            Verzegeld tot aftrap.
           </p>
         ) : predictions.length === 0 ? (
-          <p className="text-sm text-slate-500">Niemand heeft voor deze wedstrijd voorspeld.</p>
+          <p className="text-sm text-ink-500">Niemand heeft voor deze wedstrijd voorspeld.</p>
         ) : (
           <div className="card overflow-hidden p-0">
             <table className="w-full text-sm">
-              <thead className="bg-white/5 text-left text-[10px] uppercase tracking-widest text-slate-500">
-                <tr>
-                  <th className="px-3 py-2.5">Speler</th>
-                  <th className="px-3 py-2.5">Voorspeld</th>
-                  <th className="px-3 py-2.5">Door</th>
-                  <th className="px-3 py-2.5 text-right">Punten</th>
+              <thead>
+                <tr className="border-b border-line text-left">
+                  <th className="px-3 py-3 text-[11px] font-medium uppercase tracking-wider text-ink-500">Speler</th>
+                  <th className="px-3 py-3 text-[11px] font-medium uppercase tracking-wider text-ink-500">Voorspeld</th>
+                  <th className="px-3 py-3 text-[11px] font-medium uppercase tracking-wider text-ink-500">Door</th>
+                  <th className="px-3 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-ink-500">Pt</th>
                 </tr>
               </thead>
               <tbody>
                 {predictions.map((p, i) => (
-                  <tr key={i} className={`border-t border-white/5 ${p.user_id === session.uid ? "bg-accent-500/5" : ""}`}>
-                    <td className="px-3 py-2.5 font-medium text-white">{userMap.get(p.user_id) ?? "?"}</td>
-                    <td className="px-3 py-2.5 tabular-nums text-slate-300">{p.home_score}–{p.away_score}</td>
-                    <td className="px-3 py-2.5 text-slate-300">{p.advancing_team_id ? tmap.get(p.advancing_team_id) ?? "—" : "—"}</td>
+                  <tr key={i} className={`border-b border-line last:border-0 ${p.user_id === session.uid ? "bg-brand-50/40" : ""}`}>
+                    <td className="px-3 py-2.5 font-medium text-ink-900">{userMap.get(p.user_id) ?? "?"}</td>
+                    <td className="px-3 py-2.5 font-mono tabular-nums text-ink-700">{p.home_score}–{p.away_score}</td>
+                    <td className="px-3 py-2.5 text-ink-700">{p.advancing_team_id ? tmap.get(p.advancing_team_id) ?? "—" : "—"}</td>
                     <td className="px-3 py-2.5 text-right">
-                      <span className={p.points_total > 0 ? "pill-accent" : "pill-muted"}>
+                      <span className={p.points_total > 0 ? "pill-brand" : "pill-muted"}>
                         {p.points_total > 0 ? `+${p.points_total}` : "0"}
                       </span>
                     </td>
