@@ -55,13 +55,13 @@ export function TeamHoverCard({
   const disabled = teamId == null;
 
   return (
-    <div ref={wrapperRef} className="relative inline-flex">
+    <div ref={wrapperRef} className="relative w-full">
       <button
         type="button"
         onClick={toggle}
         disabled={disabled}
-        className={`flex min-w-0 items-center gap-2 rounded-md ${align === "right" ? "flex-row-reverse text-right" : ""} ${
-          disabled ? "cursor-default" : "transition hover:bg-white/5 -mx-1 px-1 py-0.5"
+        className={`flex w-full min-w-0 items-center gap-2 rounded-md ${align === "right" ? "flex-row-reverse text-right" : "text-left"} ${
+          disabled ? "cursor-default" : "transition hover:bg-white/5"
         }`}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -73,7 +73,7 @@ export function TeamHoverCard({
         <div
           role="dialog"
           onClick={(e) => e.stopPropagation()}
-          className={`absolute top-[calc(100%+8px)] z-40 w-72 rounded-xl border border-white/10 bg-ink-900 p-3 shadow-2xl shadow-black/40 ring-1 ring-black/20 ${
+          className={`absolute top-[calc(100%+8px)] z-40 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-white/10 bg-ink-900 p-3 text-left shadow-2xl shadow-black/40 ring-1 ring-black/20 ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
