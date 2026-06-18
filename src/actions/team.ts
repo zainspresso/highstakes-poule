@@ -44,7 +44,8 @@ export async function getTeamHistory(teamId: number): Promise<TeamHistory | { er
       home_team_id, away_team_id, home_score, away_score
     `)
     .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
-    .order("kickoff_at", { ascending: true });
+    .eq("status", "FINISHED")
+    .order("kickoff_at", { ascending: false });
   if (mErr) return { error: mErr.message };
 
   const opponentIds = new Set<number>();
