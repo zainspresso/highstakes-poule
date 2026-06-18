@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { submitPrediction } from "@/actions/predictions";
 import { fmtTime, isKnockoutStage } from "@/lib/format";
+import { TeamHoverCard } from "@/components/TeamHoverCard";
 
 type Team = { id: number; name: string; short_code: string | null; flag_url: string | null };
 
@@ -211,18 +212,20 @@ function TeamCell({
   const name = team?.name ?? placeholder ?? "TBD";
   const short = team?.short_code ?? truncate(name, 3);
   return (
-    <div className={`flex min-w-0 items-center gap-2 ${align === "right" ? "flex-row-reverse text-right" : ""}`}>
-      {team?.flag_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={team.flag_url} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-line" />
-      ) : (
-        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-bg text-[10px] font-semibold text-ink-300 ring-1 ring-line">?</span>
-      )}
-      <div className="min-w-0">
-        <div className="truncate text-sm font-semibold text-ink-900">{short}</div>
-        <div className="truncate text-[11px] text-ink-500">{name}</div>
-      </div>
-    </div>
+    <TeamHoverCard teamId={team?.id ?? null} align={align}>
+      <span className={`flex min-w-0 items-center gap-2 ${align === "right" ? "flex-row-reverse text-right" : ""}`}>
+        {team?.flag_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={team.flag_url} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-line" />
+        ) : (
+          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-bg text-[10px] font-semibold text-ink-300 ring-1 ring-line">?</span>
+        )}
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-ink-900">{short}</span>
+          <span className="block truncate text-[11px] text-ink-500">{name}</span>
+        </span>
+      </span>
+    </TeamHoverCard>
   );
 }
 
