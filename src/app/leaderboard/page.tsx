@@ -3,6 +3,8 @@ import { db } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function LeaderboardPage() {
   const session = await getSession();

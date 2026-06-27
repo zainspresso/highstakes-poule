@@ -7,6 +7,8 @@ import type { Day } from "@/components/DayTabs";
 import { PredictionsByDay } from "./predictions-by-day";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function PredictionsPage() {
   const session = await getSession();
