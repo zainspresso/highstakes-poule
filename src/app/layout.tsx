@@ -1,9 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { getSession } from "@/lib/session";
+import { getSession, isAdminOverrideActive } from "@/lib/session";
 import Link from "next/link";
 import { NavLink } from "@/components/NavLink";
 import { TopProgress } from "@/components/TopProgress";
+import { AdminOverrideToggle } from "@/components/AdminOverrideToggle";
 
 export const metadata: Metadata = {
   title: "High Stakes Poule",
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
+  const override = session?.admin ? await isAdminOverrideActive() : false;
 
   return (
     <html lang="nl">
@@ -34,6 +36,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <NavLink href="/bonus">Bonus</NavLink>
                 <NavLink href="/me">Mij</NavLink>
                 {session.admin && <NavLink href="/admin">Admin</NavLink>}
+                {session.admin && (
+                  <div className="ml-1">
+                    <AdminOverrideToggle initial={override} />
+                  </div>
+                )}
                 <span className="mx-2 hidden h-4 w-px bg-line sm:block" />
                 <span className="hidden text-xs font-medium text-ink-500 sm:inline">{session.name}</span>
                 <form action="/api/logout" method="post" className="ml-1">

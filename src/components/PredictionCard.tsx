@@ -38,17 +38,19 @@ export type OtherPrediction = {
 };
 
 export function PredictionCard({
-  match, prediction, others, currentUserId, totalUsers,
+  match, prediction, others, currentUserId, totalUsers, adminOverride,
 }: {
   match: MatchView;
   prediction: PredictionView;
   others?: OtherPrediction[];
   currentUserId?: string;
   totalUsers?: number;
+  adminOverride?: boolean;
 }) {
   const isKnockout = isKnockoutStage(match.stage);
   const teamsKnown = match.home_team != null && match.away_team != null;
-  const locked = new Date(match.kickoff_at).getTime() <= Date.now();
+  const lockedByTime = new Date(match.kickoff_at).getTime() <= Date.now();
+  const locked = lockedByTime && !adminOverride;
   const editable = teamsKnown && !locked;
   const finished = match.status === "FINISHED";
 
@@ -87,8 +89,9 @@ export function PredictionCard({
           {match.group_name && <span>Groep {match.group_name.replace(/^GROUP_?/i, "")}</span>}
         </div>
         <div className="flex items-center gap-1.5">
-          {!teamsKnown && !locked && <span className="pill-muted">TBD</span>}
-          {locked && !finished && <span className="pill-warn">Gesloten</span>}
+          {!teamsKnown && !lockedByTime && <span className="pill-muted">TBD</span>}
+          {lockedByTime && !finished && !adminOverride && <span className="pill-warn">Gesloten</span>}
+          {lockedByTime && adminOverride && <span className="pill-warn">Override</span>}
           {finished && <span className="pill-muted">Afgelopen</span>}
           {finished && (
             <span className={points > 0 ? "pill-brand" : "pill-muted"}>

@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/supabase";
-import { requireSession } from "@/lib/session";
+import { isAdminOverrideActive, requireSession } from "@/lib/session";
+import { recomputeMatchScores } from "@/lib/scoring";
 
 const PredSchema = z.object({
   match_id: z.coerce.number().int(),
@@ -25,17 +26,19 @@ export async function submitPrediction(formData: FormData): Promise<{ ok: boolea
   const supabase = db();
   const { data: match, error: mErr } = await supabase
     .from("matches")
-    .select("id, stage, kickoff_at, home_team_id, away_team_id")
+    .select("id, stage, status, kickoff_at, home_team_id, away_team_id")
     .eq("id", parsed.data.match_id)
     .maybeSingle();
 
   if (mErr) return { ok: false, error: mErr.message };
   if (!match) return { ok: false, error: "Wedstrijd niet gevonden." };
 
+  const override = await isAdminOverrideActive();
+
   if (match.home_team_id == null || match.away_team_id == null) {
     return { ok: false, error: "Teams nog niet bekend voor deze wedstrijd." };
   }
-  if (new Date(match.kickoff_at).getTime() <= Date.now()) {
+  if (!override && new Date(match.kickoff_at).getTime() <= Date.now()) {
     return { ok: false, error: "Voorspellen is gesloten voor deze wedstrijd." };
   }
 
@@ -62,9 +65,16 @@ export async function submitPrediction(formData: FormData): Promise<{ ok: boolea
   );
   if (upsert.error) return { ok: false, error: upsert.error.message };
 
+  // Als admin de wedstrijd na afloop alsnog bewerkt, herberekenen we zijn punten
+  // direct zodat het leaderboard klopt.
+  if (override && match.status === "FINISHED") {
+    await recomputeMatchScores(match.id);
+  }
+
   revalidatePath("/predictions");
   revalidatePath(`/matches/${match.id}`);
   revalidatePath("/me");
+  revalidatePath("/leaderboard");
   return { ok: true };
 }
 

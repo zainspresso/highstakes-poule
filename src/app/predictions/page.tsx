@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/supabase";
-import { getSession } from "@/lib/session";
+import { getSession, isAdminOverrideActive } from "@/lib/session";
 import { dayKey } from "@/lib/format";
 import type { MatchView, PredictionView, OtherPrediction } from "@/components/PredictionCard";
 import type { Day } from "@/components/DayTabs";
@@ -13,6 +13,7 @@ export const fetchCache = "force-no-store";
 export default async function PredictionsPage() {
   const session = await getSession();
   if (!session) redirect("/");
+  const adminOverride = await isAdminOverrideActive();
 
   const supabase = db();
 
@@ -137,6 +138,7 @@ export default async function PredictionsPage() {
       othersByMatch={othersByMatch}
       currentUserId={session.uid}
       totalUsers={totalUsers}
+      adminOverride={adminOverride}
     />
   );
 }

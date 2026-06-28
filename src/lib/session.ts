@@ -67,3 +67,28 @@ export async function requireAdmin(): Promise<Session> {
   if (!s.admin) throw new Error("FORBIDDEN");
   return s;
 }
+
+// ---- Admin override: laat admin voorspellingen na kickoff aanpassen ----
+const ADMIN_OVERRIDE_COOKIE = "poule_admin_override";
+
+export async function isAdminOverrideActive(): Promise<boolean> {
+  const s = await getSession();
+  if (!s?.admin) return false;
+  const c = await cookies();
+  return c.get(ADMIN_OVERRIDE_COOKIE)?.value === "1";
+}
+
+export async function setAdminOverride(on: boolean): Promise<void> {
+  const c = await cookies();
+  if (on) {
+    c.set(ADMIN_OVERRIDE_COOKIE, "1", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: MAX_AGE,
+    });
+  } else {
+    c.delete(ADMIN_OVERRIDE_COOKIE);
+  }
+}

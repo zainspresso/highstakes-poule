@@ -12,6 +12,7 @@ export function PredictionsByDay({
   othersByMatch,
   currentUserId,
   totalUsers,
+  adminOverride,
 }: {
   days: Day[];
   matchesByDay: Record<string, MatchView[]>;
@@ -19,6 +20,7 @@ export function PredictionsByDay({
   othersByMatch: Record<number, OtherPrediction[]>;
   currentUserId: string;
   totalUsers: number;
+  adminOverride?: boolean;
 }) {
   const initial = useMemo(() => {
     const today = todayKey();
@@ -87,6 +89,7 @@ export function PredictionsByDay({
                     others={othersByMatch[m.id]}
                     currentUserId={currentUserId}
                     totalUsers={totalUsers}
+                    adminOverride={adminOverride}
                   />
                 ))}
               </div>

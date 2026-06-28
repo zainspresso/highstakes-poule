@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/session";
+import { requireAdmin, setAdminOverride } from "@/lib/session";
 import { recomputeBonusScores, recomputeMatchScores } from "@/lib/scoring";
 import { syncMatches } from "@/lib/sync";
 
@@ -98,6 +98,12 @@ export async function adminOverrideMatch(formData: FormData): Promise<void> {
   revalidatePath("/admin");
   revalidatePath("/leaderboard");
   revalidatePath(`/matches/${id}`);
+}
+
+export async function adminToggleOverride(on: boolean): Promise<void> {
+  await requireAdmin();
+  await setAdminOverride(on);
+  revalidatePath("/", "layout");
 }
 
 export async function adminTriggerSync(): Promise<void> {
