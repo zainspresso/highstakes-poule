@@ -3,9 +3,10 @@ import { db } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { fmtKickoff, stageLabel } from "@/lib/format";
 import {
-  adminCreateUser, adminDeleteUser, adminOverrideMatch, adminResetPin,
+  adminCreateUser, adminDeleteUser, adminOverrideMatch, adminRecomputeAll, adminResetPin,
   adminResolveBonus, adminToggleAdmin, adminTriggerSync, adminUpdateScoring,
 } from "@/actions/admin";
+import { Diagnose } from "./diagnose";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -43,10 +44,25 @@ export default async function AdminPage() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tightest">Admin</h1>
 
-      <Section title="Match-sync" caption="Cron draait elke 10 min via Supabase. Hier kun je handmatig triggeren.">
-        <form action={adminTriggerSync}>
-          <button className="btn-brand">Nu synchroniseren</button>
-        </form>
+      <Section
+        title="Match-sync"
+        caption="Cron draait elke 10 min via Supabase. Synchroniseren haalt het laatste schema en uitslagen van football-data.org. Herrekenen loopt door alle afgeronde wedstrijden + bonusvragen om punten opnieuw uit te rekenen (handig na puntentelling-wijziging of na een score-correctie)."
+      >
+        <div className="flex flex-wrap gap-2">
+          <form action={adminTriggerSync}>
+            <button className="btn-brand">Nu synchroniseren</button>
+          </form>
+          <form action={adminRecomputeAll}>
+            <button className="btn-secondary">Herrekenen alle punten</button>
+          </form>
+        </div>
+      </Section>
+
+      <Section
+        title="Diagnose"
+        caption="Controleert of er voorspellingen zijn die verwijzen naar match-ids die niet (meer) in de database staan. Komt voor als football-data.org een match-id wijzigt — voorspellingen blijven dan in de DB maar zijn niet meer zichtbaar in de UI."
+      >
+        <Diagnose />
       </Section>
 
       <Section title="Deelnemers">

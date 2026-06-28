@@ -106,3 +106,69 @@ export async function adminTriggerSync(): Promise<void> {
   revalidatePath("/admin");
   revalidatePath("/predictions");
 }
+
+/**
+ * Herrekent punten voor ELKE afgeronde wedstrijd én bonusklassement.
+ * Gebruik als puntentelling is aangepast of als scores hersteld zijn.
+ */
+export async function adminRecomputeAll(): Promise<void> {
+  await requireAdmin();
+  const supabase = db();
+  const { data: matches, error } = await supabase
+    .from("matches")
+    .select("id")
+    .eq("status", "FINISHED");
+  if (error) throw new Error(error.message);
+
+  for (const m of matches ?? []) {
+    await recomputeMatchScores(m.id);
+  }
+  await recomputeBonusScores();
+
+  revalidatePath("/admin");
+  revalidatePath("/leaderboard");
+  revalidatePath("/me");
+  revalidatePath("/predictions");
+}
+
+/**
+ * Diagnose: tel hoeveel voorspellingen er per gebruiker zijn, en hoeveel daarvan
+ * verwijzen naar een match-id die niet (meer) in de matches-tabel staat.
+ * Verweesde predictions wijzen op een football-data.org id-wijziging.
+ */
+export async function adminDiagnose(): Promise<{
+  per_user: { name: string; total: number; orphaned: number }[];
+  orphaned_match_ids: number[];
+}> {
+  await requireAdmin();
+  const supabase = db();
+
+  const [{ data: users }, { data: preds }, { data: matches }] = await Promise.all([
+    supabase.from("users").select("id, display_name"),
+    supabase.from("predictions").select("user_id, match_id"),
+    supabase.from("matches").select("id"),
+  ]);
+
+  const matchSet = new Set((matches ?? []).map((m) => m.id));
+  const userMap = new Map((users ?? []).map((u) => [u.id, u.display_name]));
+
+  const perUser = new Map<string, { name: string; total: number; orphaned: number }>();
+  for (const u of users ?? []) {
+    perUser.set(u.id, { name: u.display_name, total: 0, orphaned: 0 });
+  }
+  const orphanedIds = new Set<number>();
+  for (const p of preds ?? []) {
+    const entry = perUser.get(p.user_id) ?? { name: userMap.get(p.user_id) ?? "?", total: 0, orphaned: 0 };
+    entry.total += 1;
+    if (!matchSet.has(p.match_id)) {
+      entry.orphaned += 1;
+      orphanedIds.add(p.match_id);
+    }
+    perUser.set(p.user_id, entry);
+  }
+
+  return {
+    per_user: [...perUser.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    orphaned_match_ids: [...orphanedIds].sort((a, b) => a - b),
+  };
+}
