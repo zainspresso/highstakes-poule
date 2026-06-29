@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/supabase";
+import { db, fetchAll } from "@/lib/supabase";
 import { requireAdmin, setAdminOverride } from "@/lib/session";
 import { recomputeBonusScores, recomputeMatchScores } from "@/lib/scoring";
 import { syncMatches } from "@/lib/sync";
@@ -149,9 +149,11 @@ export async function adminDiagnose(): Promise<{
   await requireAdmin();
   const supabase = db();
 
-  const [{ data: users }, { data: preds }, { data: matches }] = await Promise.all([
+  const [{ data: users }, preds, { data: matches }] = await Promise.all([
     supabase.from("users").select("id, display_name"),
-    supabase.from("predictions").select("user_id, match_id"),
+    fetchAll<{ user_id: string; match_id: number }>(() =>
+      supabase.from("predictions").select("user_id, match_id")
+    ),
     supabase.from("matches").select("id"),
   ]);
 
@@ -163,7 +165,7 @@ export async function adminDiagnose(): Promise<{
     perUser.set(u.id, { name: u.display_name, total: 0, orphaned: 0 });
   }
   const orphanedIds = new Set<number>();
-  for (const p of preds ?? []) {
+  for (const p of preds) {
     const entry = perUser.get(p.user_id) ?? { name: userMap.get(p.user_id) ?? "?", total: 0, orphaned: 0 };
     entry.total += 1;
     if (!matchSet.has(p.match_id)) {

@@ -1,6 +1,16 @@
 import { redirect } from "next/navigation";
-import { db } from "@/lib/supabase";
+import { db, fetchAll } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
+
+type PredRow = {
+  user_id: string;
+  points_total: number;
+  points_exact: number;
+  points_diff: number;
+  points_outcome: number;
+  points_advance: number;
+};
+type BonusRow = { user_id: string; points: number };
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,15 +21,19 @@ export default async function LeaderboardPage() {
   if (!session) redirect("/");
 
   const supabase = db();
-  const [{ data: users }, { data: preds }, { data: bonus }] = await Promise.all([
+  const [{ data: users }, preds, bonus] = await Promise.all([
     supabase.from("users").select("id, display_name"),
-    supabase.from("predictions").select("user_id, points_total, points_exact, points_diff, points_outcome, points_advance"),
-    supabase.from("bonus_predictions").select("user_id, points"),
+    fetchAll<PredRow>(() =>
+      supabase
+        .from("predictions")
+        .select("user_id, points_total, points_exact, points_diff, points_outcome, points_advance")
+    ),
+    fetchAll<BonusRow>(() => supabase.from("bonus_predictions").select("user_id, points")),
   ]);
 
   const main = new Map<string, { name: string; total: number; exact: number; diff: number; outcome: number; advance: number; count: number; }>();
   for (const u of users ?? []) main.set(u.id, { name: u.display_name, total: 0, exact: 0, diff: 0, outcome: 0, advance: 0, count: 0 });
-  for (const p of preds ?? []) {
+  for (const p of preds) {
     const e = main.get(p.user_id); if (!e) continue;
     e.total += p.points_total ?? 0;
     e.exact += p.points_exact ?? 0;
@@ -33,7 +47,7 @@ export default async function LeaderboardPage() {
 
   const bonusMap = new Map<string, number>();
   for (const u of users ?? []) bonusMap.set(u.id, 0);
-  for (const b of bonus ?? []) bonusMap.set(b.user_id, (bonusMap.get(b.user_id) ?? 0) + (b.points ?? 0));
+  for (const b of bonus) bonusMap.set(b.user_id, (bonusMap.get(b.user_id) ?? 0) + (b.points ?? 0));
   const bonusRows = (users ?? []).map((u) => ({ id: u.id, name: u.display_name, total: bonusMap.get(u.id) ?? 0 }))
     .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
 
