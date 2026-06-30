@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./supabase";
-import { deriveAdvancingTeamId, fetchAllMatches, type FootballDataMatch } from "./football-data";
+import { deriveAdvancingTeamId, fetchAllMatches, regulationScore, type FootballDataMatch } from "./football-data";
 import { recomputeMatchScores } from "./scoring";
 
 type ExistingMatch = {
@@ -19,6 +19,7 @@ export async function syncMatches(): Promise<{
   matches: number;
   rescored: number[];
   preserved: { id: number; fields: string[] }[];
+  skipped_finished: number;
 }> {
   const supabase = db();
   const apiMatches = await fetchAllMatches();
@@ -54,9 +55,25 @@ export async function syncMatches(): Promise<{
   const rescored: number[] = [];
   const preserved: { id: number; fields: string[] }[] = [];
   const rows: ReturnType<typeof mergeMatch>["row"][] = [];
+  let skippedFinished = 0;
 
   for (const m of apiMatches) {
     const prev = existing.get(m.id);
+
+    // Lock-in finished matches: zodra een wedstrijd bij ons FINISHED is met
+    // scores, syncen we hem niet opnieuw. Dit voorkomt dat de API later iets
+    // raars terugstuurt (penalty-correcties, score-rollbacks, status-bugs)
+    // en daarmee onze opgeslagen uitslag verprutst. Admin kan nog steeds
+    // handmatig overschrijven via /admin.
+    if (
+      prev?.status === "FINISHED" &&
+      prev.home_score != null &&
+      prev.away_score != null
+    ) {
+      skippedFinished++;
+      continue;
+    }
+
     const merged = mergeMatch(m, prev);
     rows.push(merged.row);
     if (merged.preserved.length > 0) {
@@ -65,29 +82,21 @@ export async function syncMatches(): Promise<{
     }
 
     // Rescore triggers
-    const apiHome = m.score.fullTime.home;
-    const apiAway = m.score.fullTime.away;
     const finalHome = merged.row.home_score;
     const finalAway = merged.row.away_score;
     const finalStatus = merged.row.status;
-    const finalAdvancing = merged.row.advancing_team_id;
 
     const wasFinished = prev?.status === "FINISHED";
     const isFinished = finalStatus === "FINISHED" && finalHome != null && finalAway != null;
-    const scoreChanged =
-      isFinished &&
-      (prev?.home_score !== finalHome ||
-       prev?.away_score !== finalAway ||
-       prev?.advancing_team_id !== finalAdvancing);
 
-    if ((!wasFinished && isFinished) || (wasFinished && scoreChanged)) {
+    if (!wasFinished && isFinished) {
       // Use the merged values; recomputeMatchScores reads them from the row we are
       // about to upsert, so trigger AFTER the upsert below.
       rescored.push(m.id);
     }
-
-    // Suppress unused-var lint for vars only used for clarity above
-    void apiHome; void apiAway;
+  }
+  if (skippedFinished > 0) {
+    console.log(`[sync] skipped ${skippedFinished} matches already FINISHED in DB`);
   }
 
   if (rows.length > 0) {
@@ -99,7 +108,7 @@ export async function syncMatches(): Promise<{
     await recomputeMatchScores(id);
   }
 
-  return { teams: teams.size, matches: rows.length, rescored, preserved };
+  return { teams: teams.size, matches: rows.length, rescored, preserved, skipped_finished: skippedFinished };
 }
 
 /**
@@ -111,8 +120,10 @@ export async function syncMatches(): Promise<{
 function mergeMatch(m: FootballDataMatch, prev: ExistingMatch | undefined) {
   const apiHomeId = m.homeTeam?.id ?? null;
   const apiAwayId = m.awayTeam?.id ?? null;
-  const apiHomeScore = m.score.fullTime.home;
-  const apiAwayScore = m.score.fullTime.away;
+  // Use regulation score (90 + extra time), strip out penalty-shootout goals.
+  const reg = regulationScore(m);
+  const apiHomeScore = reg.home;
+  const apiAwayScore = reg.away;
   const apiAdvancing = deriveAdvancingTeamId(m);
   const apiWinner = m.score.winner;
 
